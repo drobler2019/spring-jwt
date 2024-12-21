@@ -13,6 +13,8 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserRestController {
 
+    //TODO: configurar spring hateoas
+
     private final UserService userService;
 
     public UserRestController(UserService userService) {

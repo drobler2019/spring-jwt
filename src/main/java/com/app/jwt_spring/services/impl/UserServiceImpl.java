@@ -7,6 +7,7 @@ import com.app.jwt_spring.repositories.RoleRepository;
 import com.app.jwt_spring.repositories.UserRepository;
 import com.app.jwt_spring.services.UserService;
 import com.app.jwt_spring.utils.RolEnum;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,11 +37,13 @@ public class UserServiceImpl implements UserService {
         return this.userRepository.findAll().stream().map(this.userMapper::convertEntityToDTO).toList();
     }
 
-    //DataIntegrityViolationException
     @Override
     @Transactional
     public UserDTO saveUser(UserDTO userDTO) {
-        var rolValue = userDTO.isAdmin() ? RolEnum.ROLE_ADMIN: RolEnum.ROLE_USER;
+        if (this.userRepository.existsByUsername(userDTO.username())) {
+            throw new DataIntegrityViolationException("el usuario ya está en uso!");
+        }
+        var rolValue = userDTO.isAdmin() ? RolEnum.ROLE_ADMIN : RolEnum.ROLE_USER;
         var optionalRol = this.roleRepository.findByName(rolValue);
         var roles = new HashSet<RolEntity>();
         optionalRol.ifPresent(roles::add);
