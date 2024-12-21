@@ -15,7 +15,7 @@ public class UserEntity extends SuperEntity {
     private Boolean enabled;
     private LocalDateTime createAt;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+    @ManyToMany
     @JoinTable(name = "users_roles", schema = "spring_boot",
             joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"),
             uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role_id"}))
@@ -61,7 +61,7 @@ public class UserEntity extends SuperEntity {
         this.roles = roles;
     }
 
-    @PostPersist
+    @PrePersist
     public void setPostCreateAt() {
         this.createAt = LocalDateTime.now();
     }

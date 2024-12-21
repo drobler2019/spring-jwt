@@ -1,20 +1,23 @@
 package com.app.jwt_spring.entities;
 
+import com.app.jwt_spring.utils.RolEnum;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "roles")
 public class RolEntity extends SuperEntity {
 
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private RolEnum name;
 
-    public String getName() {
+    public RolEnum getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(RolEnum name) {
         this.name = name;
     }
-
 }
