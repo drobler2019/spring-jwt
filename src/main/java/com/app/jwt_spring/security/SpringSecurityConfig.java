@@ -18,8 +18,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -29,11 +29,11 @@ public class SpringSecurityConfig {
     //TODO: configurar excepciones personalizadas
 
     @Autowired
-    private AuthenticationConfiguration authenticationConfiguration;
+    @Qualifier("jwtAuthorizationAccesDenied")
+    private AccessDeniedHandler accessDeniedHandler;
 
     @Autowired
-    @Qualifier("jwtAuthorizationEntryPoint")
-    private AuthenticationEntryPoint authenticationEntryPoint;
+    private AuthenticationConfiguration authenticationConfiguration;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,12 +52,13 @@ public class SpringSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         final var jwtAuthenticationFilter = new JwtAuthenticationFilter(this.objectMapper, authenticationManager);
-        final var jwtAuthorizationFilter = new JwtAuthorizationFilter(authenticationManager, this.authenticationEntryPoint, this.objectMapper);
+        final var jwtAuthorizationFilter = new JwtAuthorizationFilter(authenticationManager, this.objectMapper);
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.GET, "/users")
                         .permitAll().requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").hasAuthority(RolEnum.ROLE_ADMIN.name())
                         .anyRequest().authenticated())
+                .exceptionHandling(handler -> handler.accessDeniedHandler(this.accessDeniedHandler))
                 .addFilter(jwtAuthenticationFilter)
                 .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(managment -> managment.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

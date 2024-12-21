@@ -27,8 +27,8 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final ObjectMapper objectMapper;
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, AuthenticationEntryPoint authenticationEntryPoint, ObjectMapper objectMapper) {
-        super(authenticationManager, authenticationEntryPoint);
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper) {
+        super(authenticationManager);
         this.objectMapper = objectMapper;
     }
 
