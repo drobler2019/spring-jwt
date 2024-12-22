@@ -1,6 +1,7 @@
 package com.app.jwt_spring.services.impl;
 
-import com.app.jwt_spring.dto.UserDTO;
+import com.app.jwt_spring.dto.UserResponseDTO;
+import com.app.jwt_spring.dto.UserRequestDTO;
 import com.app.jwt_spring.entities.RolEntity;
 import com.app.jwt_spring.mapper.UserMapper;
 import com.app.jwt_spring.repositories.RoleRepository;
@@ -18,6 +19,7 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final boolean USER_ACTIVE = true;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
@@ -33,22 +35,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDTO> findAll() {
+    public List<UserResponseDTO> findAll() {
         return this.userRepository.findAll().stream().map(this.userMapper::convertEntityToDTO).toList();
     }
 
     @Override
     @Transactional
-    public UserDTO saveUser(UserDTO userDTO) {
-        if (this.userRepository.existsByUsername(userDTO.username())) {
+    public UserResponseDTO saveUser(UserRequestDTO userRequestDTO) {
+        if (this.userRepository.existsByUsername(userRequestDTO.username())) {
             throw new DataIntegrityViolationException("el usuario ya está en uso!");
         }
-        var rolValue = userDTO.isAdmin() ? RolEnum.ROLE_ADMIN : RolEnum.ROLE_USER;
-        var optionalRol = this.roleRepository.findByName(rolValue);
+        var rol = this.roleRepository.findByName(RolEnum.ROLE_USER).get();
         var roles = new HashSet<RolEntity>();
-        optionalRol.ifPresent(roles::add);
-        var userEntity = this.userMapper.convertDTOToEntity(userDTO);
+        roles.add(rol);
+        var userEntity = this.userMapper.convertDTOToEntity(userRequestDTO);
         userEntity.setRoles(roles);
+        userEntity.setEnabled(USER_ACTIVE);
         userEntity.setPassword(this.passwordEncoder.encode(userEntity.getPassword()));
         return this.userMapper.convertEntityToDTO(this.userRepository.save(userEntity));
     }

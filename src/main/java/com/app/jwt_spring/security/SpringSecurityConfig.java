@@ -26,8 +26,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-    //TODO: configurar excepciones personalizadas
-
     @Autowired
     @Qualifier("jwtAuthorizationAccesDenied")
     private AccessDeniedHandler accessDeniedHandler;
@@ -37,6 +35,9 @@ public class SpringSecurityConfig {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JwtConfig jwtConfig;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,12 +52,12 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        final var jwtAuthenticationFilter = new JwtAuthenticationFilter(this.objectMapper, authenticationManager);
+        final var jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, this.objectMapper, this.jwtConfig);
         final var jwtAuthorizationFilter = new JwtAuthorizationFilter(authenticationManager, this.objectMapper);
         return http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.GET, "/users")
-                        .permitAll().requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").hasAuthority(RolEnum.ROLE_ADMIN.name())
+                .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/users/create")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,"/users").hasAuthority(RolEnum.ROLE_ADMIN.name())
                         .anyRequest().authenticated())
                 .exceptionHandling(handler -> handler.accessDeniedHandler(this.accessDeniedHandler))
                 .addFilter(jwtAuthenticationFilter)
