@@ -72,6 +72,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponseDTO deletePermissions(String username, List<String> roles) {
         this.validePermissions(roles);
         var userEntity = this.getUserEntity(username);
