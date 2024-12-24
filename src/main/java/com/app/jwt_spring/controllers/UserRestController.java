@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.function.Function;
 
 @RestController
@@ -35,7 +36,17 @@ public class UserRestController {
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(response);
     }
 
-    private  Function<UserResponseDTO, UserResponseDTO> getUserDTOUserDTOFunction() {
+    @PutMapping("/update-permissions")
+    public ResponseEntity<UserResponseDTO> updatePermissions(@RequestParam String username, @RequestParam List<String> roles) {
+        return ResponseEntity.ok(this.userService.updatePermissions(username, roles));
+    }
+
+    @DeleteMapping("/delete-permissions")
+    public ResponseEntity<UserResponseDTO> deletePermissions(@RequestParam String username, @RequestParam List<String> roles) {
+        return ResponseEntity.ok(this.userService.deletePermissions(username, roles));
+    }
+
+    private Function<UserResponseDTO, UserResponseDTO> getUserDTOUserDTOFunction() {
         return user -> {
             var link = WebMvcLinkBuilder.linkTo(UserRestController.class, HttpMethod.GET).withSelfRel();
             user.add(link);

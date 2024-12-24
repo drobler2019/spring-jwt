@@ -58,6 +58,7 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/users/create")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,"/users").hasAuthority(RolEnum.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.PUT,"users/update-permissions").hasAuthority(RolEnum.ROLE_ADMIN.name())
                         .anyRequest().authenticated())
                 .exceptionHandling(handler -> handler.accessDeniedHandler(this.accessDeniedHandler))
                 .addFilter(jwtAuthenticationFilter)
