@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 
-public class HateoasUtl {
+public class HateoasUtil {
 
     public static Problem buildProblem(String uri, HttpStatus httpStatus, RuntimeException runtimeException) {
         return Problem.create()

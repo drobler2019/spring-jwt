@@ -1,10 +1,10 @@
 package com.app.jwt_spring.filters;
 
+import com.app.jwt_spring.services.JwtService;
 import com.app.jwt_spring.utils.AbstractCustomSimpleGrantedAuthority;
-import com.app.jwt_spring.utils.exceptionUtil.HateoasUtl;
+import com.app.jwt_spring.utils.exceptionUtil.HateoasUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,19 +16,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import static com.app.jwt_spring.security.JwtConfig.*;
+import static com.app.jwt_spring.utils.Jwtconstant.*;
 
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final ObjectMapper objectMapper;
+    private final JwtService jwtService;
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper) {
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper,JwtService jwtService) {
         super(authenticationManager);
         this.objectMapper = objectMapper;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -42,8 +43,8 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         var token = header.substring(7);
 
         try {
-            var claims = Jwts.parser().verifyWith((SecretKey) SECRET_KEY).build().parseSignedClaims(token).getPayload();
-            var username = claims.getSubject();
+            var claims = this.jwtService.extractAllClaims(token);
+            var username = (String) claims.get("username");
             var authoritiesClaims = (String) claims.get("authorities");
             var values = this.objectMapper.addMixIn(SimpleGrantedAuthority.class, AbstractCustomSimpleGrantedAuthority.class).readValue(authoritiesClaims, SimpleGrantedAuthority[].class);
             var authorities = Stream.of(values).toList();
@@ -51,7 +52,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             SecurityContextHolder.getContext().setAuthentication(usernameAuthenticationToken);
             chain.doFilter(request, response);
         } catch (JwtException jwtException) {
-            var problem = HateoasUtl.buildProblem(request.getRequestURI(), HttpStatus.UNAUTHORIZED, jwtException);
+            var problem = HateoasUtil.buildProblem(request.getRequestURI(), HttpStatus.UNAUTHORIZED, jwtException);
             response.getWriter().write(this.objectMapper.writeValueAsString(problem));
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(CONTENT_TYPE);

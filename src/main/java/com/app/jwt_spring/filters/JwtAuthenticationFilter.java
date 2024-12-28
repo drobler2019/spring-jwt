@@ -2,8 +2,8 @@ package com.app.jwt_spring.filters;
 
 import com.app.jwt_spring.dto.SessionRequestDTO;
 import com.app.jwt_spring.dto.TokenResponseDTO;
-import com.app.jwt_spring.security.JwtConfig;
-import com.app.jwt_spring.utils.exceptionUtil.HateoasUtl;
+import com.app.jwt_spring.services.JwtService;
+import com.app.jwt_spring.utils.exceptionUtil.HateoasUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,18 +20,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.HashMap;
 
-import static com.app.jwt_spring.security.JwtConfig.*;
+import static com.app.jwt_spring.utils.Jwtconstant.*;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final ObjectMapper objectMapper;
     private final AuthenticationManager authenticationManager;
-    private final JwtConfig jwtConfig;
+    private final JwtService jwtService;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper, JwtConfig jwtConfig) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper, JwtService jwtService) {
+        this.setFilterProcessesUrl("/auth/login");
         this.authenticationManager = authenticationManager;
         this.objectMapper = objectMapper;
-        this.jwtConfig = jwtConfig;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -53,7 +54,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         var builderClaims = new HashMap<String, String>();
         builderClaims.put("authorities", this.objectMapper.writeValueAsString(authorities));
         builderClaims.put("username", username);
-        String token = jwtConfig.createToken(username, builderClaims);
+        String token = jwtService.createToken(username, builderClaims);
         response.addHeader(HEADER_AUTHORIZATION, TOKEN_PREFIX + token);
         var tokenResponse = new TokenResponseDTO(token);
         response.getWriter().write(this.objectMapper.writeValueAsString(tokenResponse));
@@ -63,7 +64,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        var problem = HateoasUtl.buildProblem(request.getRequestURI(), HttpStatus.UNAUTHORIZED, failed);
+        var problem = HateoasUtil.buildProblem(request.getRequestURI(), HttpStatus.UNAUTHORIZED, failed);
         response.getWriter().write(this.objectMapper.writeValueAsString(problem));
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(CONTENT_TYPE);

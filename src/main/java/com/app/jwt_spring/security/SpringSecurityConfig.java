@@ -2,9 +2,9 @@ package com.app.jwt_spring.security;
 
 import com.app.jwt_spring.filters.JwtAuthenticationFilter;
 import com.app.jwt_spring.filters.JwtAuthorizationFilter;
+import com.app.jwt_spring.services.JwtService;
 import com.app.jwt_spring.utils.RolEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,18 +26,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-    @Autowired
-    @Qualifier("jwtAuthorizationAccesDenied")
-    private AccessDeniedHandler accessDeniedHandler;
+    private final AccessDeniedHandler accessDeniedHandler;
 
-    @Autowired
-    private AuthenticationConfiguration authenticationConfiguration;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private JwtConfig jwtConfig;
+    private final JwtService jwtService;
+
+    public SpringSecurityConfig(@Qualifier("jwtAuthorizationAccesDenied") AccessDeniedHandler accessDeniedHandler,
+                                AuthenticationConfiguration authenticationConfiguration, ObjectMapper objectMapper, JwtService jwtService) {
+        this.accessDeniedHandler = accessDeniedHandler;
+        this.authenticationConfiguration = authenticationConfiguration;
+        this.objectMapper = objectMapper;
+        this.jwtService = jwtService;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -52,13 +55,13 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        final var jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, this.objectMapper, this.jwtConfig);
-        final var jwtAuthorizationFilter = new JwtAuthorizationFilter(authenticationManager, this.objectMapper);
+        final var jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, this.objectMapper, this.jwtService);
+        final var jwtAuthorizationFilter = new JwtAuthorizationFilter(authenticationManager, this.objectMapper, this.jwtService);
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/users/create")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET,"/users").hasAuthority(RolEnum.ROLE_ADMIN.name())
-                        .requestMatchers(HttpMethod.PUT,"users/update-permissions").hasAuthority(RolEnum.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.GET, "/users").hasAuthority(RolEnum.ROLE_ADMIN.name())
+                        .requestMatchers(HttpMethod.PUT, "users/update-permissions").hasAuthority(RolEnum.ROLE_ADMIN.name())
                         .anyRequest().authenticated())
                 .exceptionHandling(handler -> handler.accessDeniedHandler(this.accessDeniedHandler))
                 .addFilter(jwtAuthenticationFilter)

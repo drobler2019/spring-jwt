@@ -1,6 +1,6 @@
 package com.app.jwt_spring.handler;
 
-import com.app.jwt_spring.utils.exceptionUtil.HateoasUtl;
+import com.app.jwt_spring.utils.exceptionUtil.HateoasUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.mediatype.problem.Problem;
@@ -15,13 +15,13 @@ public class ExceptionHandlerControllerAdvice {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Problem> badCredentialsException(HttpServletRequest request, AccessDeniedException accessDeniedException) {
-        var problem = HateoasUtl.buildProblem(request.getRequestURI(), HttpStatus.FORBIDDEN, accessDeniedException);
+        var problem = HateoasUtil.buildProblem(request.getRequestURI(), HttpStatus.FORBIDDEN, accessDeniedException);
         return new ResponseEntity<>(problem, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler({DataIntegrityViolationException.class, IllegalArgumentException.class})
     public ResponseEntity<Problem> duplicateUsernameException(HttpServletRequest request, RuntimeException runtimeException) {
-        var response = HateoasUtl.buildProblem(request.getRequestURI(), HttpStatus.BAD_REQUEST, runtimeException);
+        var response = HateoasUtil.buildProblem(request.getRequestURI(), HttpStatus.BAD_REQUEST, runtimeException);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

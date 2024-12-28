@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO updatePermissions(String username, List<String> roles) {
         this.validePermissions(roles);
         var userEntity = getUserEntity(username);
-        var rolesEntity = roles.stream().map(r -> this.roleRepository.findByName(RolEnum.valueOf(r))).map(Optional::get).collect(Collectors.toSet());
+        var rolesEntity = roles.stream().map(rol -> this.roleRepository.findByName(RolEnum.valueOf(rol))).map(Optional::get).collect(Collectors.toSet());
         userEntity.getRoles().addAll(rolesEntity);
         this.userRepository.save(userEntity);
         return this.userMapper.convertEntityToDTO(userEntity);
