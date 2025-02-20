@@ -6,6 +6,7 @@ import com.app.jwt_spring.entities.RolEntity;
 import com.app.jwt_spring.entities.UserEntity;
 import com.app.jwt_spring.mapper.UserMapper;
 import com.app.jwt_spring.repositories.RoleRepository;
+import com.app.jwt_spring.repositories.UserJdbcTemplateRepository;
 import com.app.jwt_spring.repositories.UserRepository;
 import com.app.jwt_spring.services.UserService;
 import com.app.jwt_spring.utils.RolEnum;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +31,15 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final UserJdbcTemplateRepository userJdbcTemplateRepository;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-                           UserMapper userMapper, PasswordEncoder passwordEncoder) {
+                           UserMapper userMapper, PasswordEncoder passwordEncoder,UserJdbcTemplateRepository userJdbcTemplateRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.userJdbcTemplateRepository = userJdbcTemplateRepository;
     }
 
     @Override
@@ -79,6 +83,11 @@ public class UserServiceImpl implements UserService {
         roles.forEach(rol -> userEntity.getRoles().removeIf(rolEntity -> rolEntity.getName().name().equals(rol)));
         this.userRepository.save(userEntity);
         return this.userMapper.convertEntityToDTO(userEntity);
+    }
+
+    @Override
+    public String saveUserWithJdbcTemplate(UserRequestDTO requestDTO) throws SQLException {
+        return this.userJdbcTemplateRepository.insertUser(requestDTO.username(), this.passwordEncoder.encode(requestDTO.password()));
     }
 
     private UserEntity getUserEntity(String username) {

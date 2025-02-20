@@ -7,7 +7,7 @@ import java.net.URI;
 
 public class HateoasUtil {
 
-    public static Problem buildProblem(String uri, HttpStatus httpStatus, RuntimeException runtimeException) {
+    public static Problem buildProblem(String uri, HttpStatus httpStatus, Exception runtimeException) {
         return Problem.create()
                 .withTitle(httpStatus.getReasonPhrase())
                 .withStatus(httpStatus)

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Function;
 
@@ -31,8 +32,8 @@ public class UserRestController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<UserResponseDTO> createUser(HttpServletRequest httpServletRequest, @RequestBody UserRequestDTO userRequestDTO) {
-        var response = this.userService.saveUser(userRequestDTO);
+    public ResponseEntity<String> createUser(HttpServletRequest httpServletRequest, @RequestBody UserRequestDTO userRequestDTO) throws SQLException {
+        var response = this.userService.saveUserWithJdbcTemplate(userRequestDTO);
         return ResponseEntity.created(URI.create(httpServletRequest.getRequestURI())).body(response);
     }
 
