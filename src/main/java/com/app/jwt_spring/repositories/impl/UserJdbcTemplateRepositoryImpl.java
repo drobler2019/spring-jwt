@@ -1,6 +1,7 @@
 package com.app.jwt_spring.repositories.impl;
 
-import com.app.jwt_spring.handler.StoredProcedureException;
+import com.app.jwt_spring.handler.exception.GenericException;
+import com.app.jwt_spring.handler.exception.StoredProcedureException;
 import com.app.jwt_spring.repositories.UserJdbcTemplateRepository;
 import com.app.jwt_spring.utils.RolEnum;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class UserJdbcTemplateRepositoryImpl implements UserJdbcTemplateRepositor
 
     @Override
     @Transactional(rollbackFor = SQLException.class)
-    public String insertUser(String username, String password) throws SQLException {
+    public String insertUser(String username, String password) {
         try {
             CallableStatementCreator callableStatementCreator = con -> {
                 var cs = con.prepareCall(STORED_PROCEDURE_NAME);
@@ -48,7 +49,7 @@ public class UserJdbcTemplateRepositoryImpl implements UserJdbcTemplateRepositor
                 var message = e.getMessage().substring(e.getMessage().indexOf(SP_RESPONSE_ERROR));
                 throw new StoredProcedureException(message);
             }
-            throw new SQLException(e.getMessage());
+            throw new GenericException(e.getMessage());
         }
     }
 

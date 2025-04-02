@@ -10,13 +10,14 @@ import com.app.jwt_spring.repositories.UserJdbcTemplateRepository;
 import com.app.jwt_spring.repositories.UserRepository;
 import com.app.jwt_spring.services.UserService;
 import com.app.jwt_spring.utils.RolEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -86,7 +87,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String saveUserWithJdbcTemplate(UserRequestDTO requestDTO) throws SQLException {
+    public String saveUserWithJdbcTemplate(UserRequestDTO requestDTO) {
         return this.userJdbcTemplateRepository.insertUser(requestDTO.username(), this.passwordEncoder.encode(requestDTO.password()));
     }
 

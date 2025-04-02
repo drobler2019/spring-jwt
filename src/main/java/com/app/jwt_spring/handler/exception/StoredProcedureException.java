@@ -1,4 +1,4 @@
-package com.app.jwt_spring.handler;
+package com.app.jwt_spring.handler.exception;
 
 import org.springframework.dao.DataAccessException;
 

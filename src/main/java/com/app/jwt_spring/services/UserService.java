@@ -3,7 +3,6 @@ package com.app.jwt_spring.services;
 import com.app.jwt_spring.dto.UserRequestDTO;
 import com.app.jwt_spring.dto.UserResponseDTO;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public interface UserService {
@@ -16,6 +15,6 @@ public interface UserService {
 
     UserResponseDTO deletePermissions(String username, List<String> roles);
 
-    String saveUserWithJdbcTemplate(UserRequestDTO requestDTO) throws SQLException;
+    String saveUserWithJdbcTemplate(UserRequestDTO requestDTO);
 
 }
